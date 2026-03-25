@@ -1,0 +1,536 @@
+﻿===== C:\Users\ADNIM\Application Diffuser\diffuser_backend\src\database.js =====
+// database.js â€” In-memory database v4
+// 3 Role: admin, manager, technician
+// + à¸¥à¸¹à¸à¸„à¹‰à¸² (customers) + Log à¹€à¸‹à¸­à¸£à¹Œà¸§à¸´à¸ª + à¹à¸žà¹‡à¸„à¹€à¸à¸ˆà¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡
+
+const bcrypt = require('bcryptjs');
+const hash = bcrypt.hashSync('password', 10);
+
+const users = [
+  { id: '1', name: 'Admin User', email: 'admin@scentandsense.com', password: hash, role: 'admin', lastLogin: null, isOnline: false, createdAt: new Date().toISOString() },
+  { id: '2', name: 'Manager User', email: 'manager@scentandsense.com', password: hash, role: 'manager', lastLogin: null, isOnline: false, createdAt: new Date().toISOString() },
+  { id: '3', name: 'Tech User', email: 'tech@scentandsense.com', password: hash, role: 'technician', lastLogin: null, isOnline: false, createdAt: new Date().toISOString() },
+];
+
+const customers = [
+  { id: 'c1', name: 'Grand Palace Hotel', contactName: 'à¸„à¸¸à¸“à¸ªà¸¡à¸Šà¸²à¸¢', contactPhone: '081-234-5678', contactEmail: 'somchai@grandpalace.com', address: '123 à¸–.à¸ªà¸¸à¸‚à¸¸à¸¡à¸§à¸´à¸— à¸à¸£à¸¸à¸‡à¹€à¸—à¸žà¸¯', packageQty: 10, notes: '', createdAt: new Date().toISOString() },
+  { id: 'c2', name: 'Spa Zenith', contactName: 'à¸„à¸¸à¸“à¸§à¸´à¸ à¸²', contactPhone: '089-876-5432', contactEmail: 'vipa@spazenith.com', address: '456 à¸–.à¸žà¸«à¸¥à¹‚à¸¢à¸˜à¸´à¸™ à¸à¸£à¸¸à¸‡à¹€à¸—à¸žà¸¯', packageQty: 5, notes: '', createdAt: new Date().toISOString() },
+  { id: 'c3', name: 'Rose Cafe', contactName: 'à¸„à¸¸à¸“à¸£à¸±à¸•à¸™à¸²', contactPhone: '092-111-2222', contactEmail: 'ratana@rosecafe.com', address: '789 à¸–.à¸¥à¸²à¸”à¸žà¸£à¹‰à¸²à¸§ à¸à¸£à¸¸à¸‡à¹€à¸—à¸žà¸¯', packageQty: 3, notes: '', createdAt: new Date().toISOString() },
+];
+
+const devices = [
+  { id: 'd1', serialNumber: 'SS-2025-001', name: 'Diffuser à¸¥à¹‡à¸­à¸šà¸šà¸µà¹‰', ip: '192.168.1.101', mac: 'AA:BB:CC:DD:EE:01', customerId: 'c1', location: 'à¸¥à¹‡à¸­à¸šà¸šà¸µà¹‰à¸Šà¸±à¹‰à¸™ 1', groupId: null, status: 'online', isOn: true, level: 75, battery: 100, pumpOk: true, relayOk: true, wifiSSID: 'GrandPalace_5G', wifiIP: '192.168.1.101', btAddress: 'AA:BB:CC:DD:EE:01', btConnected: false, schedule: [{ startTime: '08:00', endTime: '18:00', workSeconds: 30, pauseSeconds: 60, days: [true,true,true,true,true,false,false] }], firmwareVersion: '1.0.0', createdAt: new Date().toISOString() },
+  { id: 'd2', serialNumber: 'SS-2025-002', name: 'Diffuser à¸«à¹‰à¸­à¸‡à¸›à¸£à¸°à¸Šà¸¸à¸¡', ip: '192.168.1.102', mac: 'AA:BB:CC:DD:EE:02', customerId: 'c1', location: 'à¸«à¹‰à¸­à¸‡à¸›à¸£à¸°à¸Šà¸¸à¸¡à¸Šà¸±à¹‰à¸™ 2', groupId: null, status: 'online', isOn: false, level: 30, battery: 100, pumpOk: true, relayOk: true, wifiSSID: 'GrandPalace_5G', wifiIP: '192.168.1.102', btAddress: 'AA:BB:CC:DD:EE:02', btConnected: false, schedule: [], firmwareVersion: '1.0.0', createdAt: new Date().toISOString() },
+  { id: 'd3', serialNumber: 'SS-2025-003', name: 'Diffuser à¸ªà¸›à¸² Zone A', ip: '192.168.2.101', mac: 'AA:BB:CC:DD:EE:03', customerId: 'c2', location: 'à¸ªà¸›à¸² Zone A', groupId: null, status: 'online', isOn: true, level: 90, battery: 100, pumpOk: true, relayOk: true, wifiSSID: 'SpaZenith_WiFi', wifiIP: '192.168.2.101', btAddress: 'AA:BB:CC:DD:EE:03', btConnected: false, schedule: [{ startTime: '09:00', endTime: '21:00', workSeconds: 45, pauseSeconds: 90, days: [true,true,true,true,true,true,true] }], firmwareVersion: '1.0.0', createdAt: new Date().toISOString() },
+  { id: 'd4', serialNumber: 'SS-2025-004', name: '', ip: '192.168.1.103', mac: 'AA:BB:CC:DD:EE:04', customerId: 'c1', location: '', groupId: null, status: 'offline', isOn: false, level: 0, battery: 50, pumpOk: true, relayOk: true, wifiSSID: '', wifiIP: '', btAddress: 'AA:BB:CC:DD:EE:04', btConnected: false, schedule: [], firmwareVersion: '1.0.0', createdAt: new Date().toISOString() },
+];
+
+const serviceLogs = [
+  { id: 'sl1', deviceId: 'd1', technicianId: '3', type: 'refill', description: 'à¹€à¸•à¸´à¸¡à¸™à¹‰à¸³à¸«à¸­à¸¡ 15% -> 100%', notes: 'à¸™à¹‰à¸³à¸«à¸­à¸¡à¸à¸¥à¸´à¹ˆà¸™à¸¥à¸²à¹€à¸§à¸™à¹€à¸”à¸­à¸£à¹Œ', photos: [], createdAt: '2026-03-18T10:30:00.000Z' },
+  { id: 'sl2', deviceId: 'd2', technicianId: '3', type: 'repair', description: 'à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™à¸›à¸±à¹Šà¸¡', notes: 'à¸›à¸±à¹Šà¸¡à¹€à¸à¹ˆà¸²à¹€à¸ªà¸µà¸¢ à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™à¸•à¸±à¸§à¹ƒà¸«à¸¡à¹ˆ', photos: [], createdAt: '2026-03-17T14:00:00.000Z' },
+  { id: 'sl3', deviceId: 'd3', technicianId: '3', type: 'installation', description: 'à¸•à¸´à¸”à¸•à¸±à¹‰à¸‡à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡à¹ƒà¸«à¸¡à¹ˆ à¸ªà¸›à¸² Zone A', notes: '', photos: [], createdAt: '2026-03-10T11:00:00.000Z' },
+  { id: 'sl4', deviceId: 'd1', technicianId: '3', type: 'inspection', description: 'à¸•à¸£à¸§à¸ˆà¹€à¸Šà¹‡à¸„à¸›à¸£à¸°à¸ˆà¸³à¹€à¸”à¸·à¸­à¸™', notes: 'à¸—à¸¸à¸à¸­à¸¢à¹ˆà¸²à¸‡à¸›à¸à¸•à¸´', photos: [], createdAt: '2026-03-16T09:00:00.000Z' },
+];
+
+const notifications = [];
+
+module.exports = { users, customers, devices, serviceLogs, notifications };
+===== C:\Users\ADNIM\Application Diffuser\diffuser_backend\src\server.js =====
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const app = express();
+
+app.use(cors({ origin: '*' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+const authRoutes = require('./routes/auth');
+const usersRoutes = require('./routes/users');
+const devicesRoutes = require('./routes/devices');
+const customersRoutes = require('./routes/customers');
+const serviceLogsRoutes = require('./routes/service-logs');
+
+app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/devices', devicesRoutes);
+app.use('/api/customers', customersRoutes);
+app.use('/api/service-logs', serviceLogsRoutes);
+
+// Notifications
+const { notifications } = require('./database');
+const { verify } = require('./middleware/auth');
+
+app.get('/api/notifications', verify, (req, res) => {
+  const result = notifications
+    .filter(n => req.user.role === 'admin' || n.targetRoles?.includes(req.user.role))
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 50);
+  res.json(result);
+});
+app.put('/api/notifications/:id/read', verify, (req, res) => {
+  const n = notifications.find(n => n.id === req.params.id);
+  if (n) n.isRead = true;
+  res.json({ message: 'OK' });
+});
+app.put('/api/notifications/read-all', verify, (req, res) => {
+  notifications.forEach(n => n.isRead = true);
+  res.json({ message: 'OK' });
+});
+
+// Search
+const { devices, customers } = require('./database');
+app.get('/api/search', verify, (req, res) => {
+  const q = (req.query.q || '').toLowerCase();
+  if (!q) return res.json({ customers: [], devices: [] });
+  const matchedCustomers = customers.filter(c =>
+    c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q));
+  const matchedDevices = devices.filter(d =>
+    d.name.toLowerCase().includes(q) || d.serialNumber.toLowerCase().includes(q) ||
+    d.location.toLowerCase().includes(q) || d.wifiSSID.toLowerCase().includes(q));
+  res.json({
+    customers: matchedCustomers,
+    devices: matchedDevices.map(d => ({
+      ...d, customerName: d.customerId ? customers.find(c => c.id === d.customerId)?.name || '' : ''
+    }))
+  });
+});
+
+// Health
+app.get('/test', (req, res) => res.json({ message: 'Scent & Sense Backend v1.0 OK' }));
+app.get('/health', (req, res) => res.json({ status: 'OK', version: '1.0.0', timestamp: new Date().toISOString() }));
+
+app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
+app.use((err, req, res, next) => { console.error(err.stack); res.status(500).json({ message: 'Something went wrong!' }); });
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`âœ… Scent & Sense Backend v1.0`);
+  console.log(`ðŸ“ http://0.0.0.0:${PORT}`);
+  console.log(`ðŸ”‘ Test accounts:`);
+  console.log(`   Admin:      admin@scentandsense.com / password`);
+  console.log(`   Manager:    manager@scentandsense.com / password`);
+  console.log(`   Technician: tech@scentandsense.com / password`);
+});
+===== C:\Users\ADNIM\Application Diffuser\diffuser_backend\src\middleware\auth.js =====
+// middleware/auth.js
+const jwt = require('jsonwebtoken');
+
+const SECRET = process.env.JWT_SECRET || 'scent-and-sense-secret-2025';
+
+// à¸•à¸£à¸§à¸ˆ JWT Token
+function verify(req, res, next) {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ message: 'à¹„à¸¡à¹ˆà¸¡à¸µ token à¸à¸²à¸£à¸¢à¸·à¸™à¸¢à¸±à¸™à¸•à¸±à¸§à¸•à¸™' });
+  try {
+    req.user = jwt.verify(token, SECRET);
+    next();
+  } catch (err) {
+    res.status(401).json({ message: 'Token à¹„à¸¡à¹ˆà¸–à¸¹à¸à¸•à¹‰à¸­à¸‡à¸«à¸£à¸·à¸­à¸«à¸¡à¸”à¸­à¸²à¸¢à¸¸' });
+  }
+}
+
+// à¹€à¸‰à¸žà¸²à¸° Admin à¹€à¸—à¹ˆà¸²à¸™à¸±à¹‰à¸™
+function adminOnly(req, res, next) {
+  verify(req, res, () => {
+    if (req.user.role !== 'admin') return res.status(403).json({ message: 'à¸•à¹‰à¸­à¸‡à¹€à¸›à¹‡à¸™ Admin à¹€à¸—à¹ˆà¸²à¸™à¸±à¹‰à¸™' });
+    next();
+  });
+}
+
+// Admin à¸«à¸£à¸·à¸­ Manager
+function managerUp(req, res, next) {
+  verify(req, res, () => {
+    if (!['admin', 'manager'].includes(req.user.role)) return res.status(403).json({ message: 'à¸•à¹‰à¸­à¸‡à¹€à¸›à¹‡à¸™ Admin à¸«à¸£à¸·à¸­ Manager' });
+    next();
+  });
+}
+
+// à¸—à¸¸à¸ Role (à¹à¸„à¹ˆà¸•à¹‰à¸­à¸‡ login)
+function anyRole(req, res, next) {
+  verify(req, res, next);
+}
+
+module.exports = { verify, adminOnly, managerUp, anyRole, SECRET };
+===== C:\Users\ADNIM\Application Diffuser\diffuser_backend\src\routes\auth.js =====
+const router = require('express').Router();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { users } = require('../database');
+const { SECRET, verify } = require('../middleware/auth');
+
+// POST /api/auth/login
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ message: 'à¸à¸£à¸¸à¸“à¸²à¸à¸£à¸­à¸à¸­à¸µà¹€à¸¡à¸¥à¹à¸¥à¸°à¸£à¸«à¸±à¸ªà¸œà¹ˆà¸²à¸™' });
+
+    const user = users.find(u => u.email === email.toLowerCase());
+    if (!user) return res.status(401).json({ message: 'à¸­à¸µà¹€à¸¡à¸¥à¸«à¸£à¸·à¸­à¸£à¸«à¸±à¸ªà¸œà¹ˆà¸²à¸™à¹„à¸¡à¹ˆà¸–à¸¹à¸à¸•à¹‰à¸­à¸‡' });
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) return res.status(401).json({ message: 'à¸­à¸µà¹€à¸¡à¸¥à¸«à¸£à¸·à¸­à¸£à¸«à¸±à¸ªà¸œà¹ˆà¸²à¸™à¹„à¸¡à¹ˆà¸–à¸¹à¸à¸•à¹‰à¸­à¸‡' });
+
+    user.lastLogin = new Date().toISOString();
+    user.isOnline = true;
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role, name: user.name },
+      SECRET,
+      { expiresIn: '30d' }
+    );
+
+    const { password: _, ...safe } = user;
+    res.json({ token, user: safe });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'à¹€à¸à¸´à¸”à¸‚à¹‰à¸­à¸œà¸´à¸”à¸žà¸¥à¸²à¸”' });
+  }
+});
+
+// POST /api/auth/logout
+router.post('/logout', verify, (req, res) => {
+  const user = users.find(u => u.id === req.user.id);
+  if (user) user.isOnline = false;
+  res.json({ message: 'à¸­à¸­à¸à¸ˆà¸²à¸à¸£à¸°à¸šà¸šà¹à¸¥à¹‰à¸§' });
+});
+
+// GET /api/auth/me
+router.get('/me', verify, (req, res) => {
+  const user = users.find(u => u.id === req.user.id);
+  if (!user) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰' });
+  const { password: _, ...safe } = user;
+  res.json(safe);
+});
+
+// POST /api/auth/forgot-password â€” à¸‚à¸­à¸£à¸µà¹€à¸‹à¹‡à¸•à¸£à¸«à¸±à¸ªà¸œà¹ˆà¸²à¸™
+router.post('/forgot-password', (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: 'à¸à¸£à¸­à¸à¸­à¸µà¹€à¸¡à¸¥' });
+
+  const user = users.find(u => u.email === email.toLowerCase());
+  // à¹„à¸¡à¹ˆà¸šà¸­à¸à¸§à¹ˆà¸²à¹€à¸ˆà¸­à¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆà¹€à¸ˆà¸­ (security)
+  if (user) {
+    // à¸ªà¸£à¹‰à¸²à¸‡ reset token à¸­à¸²à¸¢à¸¸ 1 à¸Šà¸±à¹ˆà¸§à¹‚à¸¡à¸‡
+    const resetToken = jwt.sign({ id: user.id, type: 'reset' }, SECRET, { expiresIn: '1h' });
+    user.resetToken = resetToken;
+    user.resetExpiry = new Date(Date.now() + 3600000).toISOString();
+    console.log(`ðŸ”‘ Reset token for ${email}: ${resetToken}`);
+    console.log(`ðŸ“§ Admin: à¸ªà¹ˆà¸‡ token à¸™à¸µà¹‰à¹ƒà¸«à¹‰ ${user.name} (${user.email})`);
+  }
+
+  res.json({ message: 'à¸«à¸²à¸à¸­à¸µà¹€à¸¡à¸¥à¸™à¸µà¹‰à¸¡à¸µà¹ƒà¸™à¸£à¸°à¸šà¸š Admin à¸ˆà¸°à¸•à¸´à¸”à¸•à¹ˆà¸­à¸à¸¥à¸±à¸š' });
+});
+
+// POST /api/auth/reset-password â€” Admin à¸£à¸µà¹€à¸‹à¹‡à¸•à¹ƒà¸«à¹‰à¹„à¸”à¹‰à¹€à¸¥à¸¢
+router.post('/reset-password', verify, async (req, res) => {
+  try {
+    // Admin à¸£à¸µà¹€à¸‹à¹‡à¸•à¸£à¸«à¸±à¸ªà¸œà¹ˆà¸²à¸™à¹ƒà¸«à¹‰ user à¸„à¸™à¸­à¸·à¹ˆà¸™
+    if (req.user.role === 'admin') {
+      const { userId, newPassword } = req.body;
+      if (!userId || !newPassword) return res.status(400).json({ message: 'à¸à¸£à¸­à¸ userId à¹à¸¥à¸° newPassword' });
+      const target = users.find(u => u.id === userId);
+      if (!target) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰' });
+      target.password = await bcrypt.hash(newPassword, 10);
+      return res.json({ message: `à¸£à¸µà¹€à¸‹à¹‡à¸•à¸£à¸«à¸±à¸ªà¸œà¹ˆà¸²à¸™à¸‚à¸­à¸‡ ${target.name} à¸ªà¸³à¹€à¸£à¹‡à¸ˆ` });
+    }
+    // User à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™à¸£à¸«à¸±à¸ªà¸•à¸±à¸§à¹€à¸­à¸‡
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.status(400).json({ message: 'à¸à¸£à¸­à¸à¸£à¸«à¸±à¸ªà¸œà¹ˆà¸²à¸™à¸›à¸±à¸ˆà¸ˆà¸¸à¸šà¸±à¸™à¹à¸¥à¸°à¹ƒà¸«à¸¡à¹ˆ' });
+    const user = users.find(u => u.id === req.user.id);
+    if (!user) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰' });
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) return res.status(401).json({ message: 'à¸£à¸«à¸±à¸ªà¸œà¹ˆà¸²à¸™à¸›à¸±à¸ˆà¸ˆà¸¸à¸šà¸±à¸™à¹„à¸¡à¹ˆà¸–à¸¹à¸à¸•à¹‰à¸­à¸‡' });
+    user.password = await bcrypt.hash(newPassword, 10);
+    res.json({ message: 'à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™à¸£à¸«à¸±à¸ªà¸œà¹ˆà¸²à¸™à¸ªà¸³à¹€à¸£à¹‡à¸ˆ' });
+  } catch (error) {
+    res.status(500).json({ message: 'à¹€à¸à¸´à¸”à¸‚à¹‰à¸­à¸œà¸´à¸”à¸žà¸¥à¸²à¸”' });
+  }
+});
+
+module.exports = router;
+===== C:\Users\ADNIM\Application Diffuser\diffuser_backend\src\routes\customers.js =====
+const router = require('express').Router();
+const { adminOnly, managerUp, anyRole } = require('../middleware/auth');
+const { customers, devices } = require('../database');
+
+router.get('/', anyRole, (req, res) => {
+  const result = customers.map(c => ({
+    ...c,
+    deviceCount: devices.filter(d => d.customerId === c.id).length,
+    onlineCount: devices.filter(d => d.customerId === c.id && d.status === 'online').length,
+    alertCount: devices.filter(d => d.customerId === c.id && (d.level < 20 || d.status === 'offline')).length,
+  }));
+  res.json(result);
+});
+
+router.get('/:id', anyRole, (req, res) => {
+  const c = customers.find(c => c.id === req.params.id);
+  if (!c) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¸¥à¸¹à¸à¸„à¹‰à¸²' });
+  const devs = devices.filter(d => d.customerId === c.id);
+  res.json({ ...c, deviceCount: devs.length, onlineCount: devs.filter(d => d.status === 'online').length, alertCount: devs.filter(d => d.level < 20 || d.status === 'offline').length, devices: devs });
+});
+
+router.post('/', managerUp, (req, res) => {
+  const { name, contactName, contactPhone, contactEmail, address, packageQty, notes } = req.body;
+  if (!name) return res.status(400).json({ message: 'à¸à¸£à¸­à¸à¸Šà¸·à¹ˆà¸­à¸¥à¸¹à¸à¸„à¹‰à¸²' });
+  const customer = { id: `c${Date.now()}`, name, contactName: contactName || '', contactPhone: contactPhone || '', contactEmail: contactEmail || '', address: address || '', packageQty: packageQty || 0, notes: notes || '', createdAt: new Date().toISOString() };
+  customers.push(customer);
+  res.status(201).json({ ...customer, deviceCount: 0, onlineCount: 0, alertCount: 0 });
+});
+
+router.put('/:id', managerUp, (req, res) => {
+  const c = customers.find(c => c.id === req.params.id);
+  if (!c) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¸¥à¸¹à¸à¸„à¹‰à¸²' });
+  ['name', 'contactName', 'contactPhone', 'contactEmail', 'address', 'packageQty', 'notes'].forEach(f => { if (req.body[f] !== undefined) c[f] = req.body[f]; });
+  res.json(c);
+});
+
+router.delete('/:id', adminOnly, (req, res) => {
+  const idx = customers.findIndex(c => c.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¸¥à¸¹à¸à¸„à¹‰à¸²' });
+  devices.filter(d => d.customerId === req.params.id).forEach(d => { d.customerId = null; d.location = ''; });
+  customers.splice(idx, 1);
+  res.json({ message: 'à¸¥à¸šà¸ªà¸³à¹€à¸£à¹‡à¸ˆ' });
+});
+
+module.exports = router;
+===== C:\Users\ADNIM\Application Diffuser\diffuser_backend\src\routes\devices.js =====
+const router = require('express').Router();
+const { adminOnly, managerUp, anyRole } = require('../middleware/auth');
+const { devices, customers, notifications } = require('../database');
+
+router.get('/', anyRole, (req, res) => {
+  let result = devices;
+  if (req.query.customerId) result = result.filter(d => d.customerId === req.query.customerId);
+  if (req.query.search) {
+    const s = req.query.search.toLowerCase();
+    result = result.filter(d => d.name.toLowerCase().includes(s) || d.serialNumber.toLowerCase().includes(s) || d.location.toLowerCase().includes(s) || d.wifiSSID.toLowerCase().includes(s) || (d.customerId && customers.find(c => c.id === d.customerId)?.name.toLowerCase().includes(s)));
+  }
+  res.json(result.map(d => ({ ...d, customerName: d.customerId ? customers.find(c => c.id === d.customerId)?.name || '' : '' })));
+});
+
+router.get('/:id', anyRole, (req, res) => {
+  const d = devices.find(d => d.id === req.params.id);
+  if (!d) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡' });
+  res.json({ ...d, customerName: d.customerId ? customers.find(c => c.id === d.customerId)?.name || '' : '' });
+});
+
+router.post('/', managerUp, (req, res) => {
+  const { name, serialNumber, ip, mac, customerId, location, groupId, wifiSSID, btAddress } = req.body;
+  if (!ip) return res.status(400).json({ message: 'à¸à¸£à¸­à¸ ip' });
+  if (serialNumber && devices.find(d => d.serialNumber === serialNumber)) return res.status(400).json({ message: 'Serial Number à¸‹à¹‰à¸³' });
+  const device = { id: `d${Date.now()}`, serialNumber: serialNumber || `SS-${Date.now()}`, name: name || '', ip, mac: mac || '', customerId: customerId || null, location: location || '', groupId: groupId || null, status: 'offline', isOn: false, level: 100, battery: 100, pumpOk: true, relayOk: true, wifiSSID: wifiSSID || '', wifiIP: ip, btAddress: btAddress || '', btConnected: false, schedule: [], firmwareVersion: '1.0.0', createdAt: new Date().toISOString() };
+  devices.push(device);
+  res.status(201).json(device);
+});
+
+router.put('/:id', anyRole, (req, res) => {
+  const device = devices.find(d => d.id === req.params.id);
+  if (!device) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡' });
+  if (req.user.role === 'technician') {
+    const { name, location, wifiSSID } = req.body;
+    const changes = [];
+    if (name !== undefined && name !== device.name) { changes.push(`à¸Šà¸·à¹ˆà¸­: "${device.name}" â†’ "${name}"`); device.name = name; }
+    if (location !== undefined && location !== device.location) { changes.push(`à¸•à¸³à¹à¸«à¸™à¹ˆà¸‡: "${device.location}" â†’ "${location}"`); device.location = location; }
+    if (wifiSSID !== undefined && wifiSSID !== device.wifiSSID) { changes.push(`WiFi: "${device.wifiSSID}" â†’ "${wifiSSID}"`); device.wifiSSID = wifiSSID; }
+    if (changes.length > 0) {
+      notifications.push({ id: `n${Date.now()}`, type: 'device_edit', title: `à¸Šà¹ˆà¸²à¸‡ ${req.user.name} à¹à¸à¹‰à¹„à¸‚à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡ ${device.serialNumber}`, message: changes.join(', '), deviceId: device.id, userId: req.user.id, targetRoles: ['admin', 'manager'], isRead: false, createdAt: new Date().toISOString() });
+    }
+    const blocked = ['serialNumber', 'ip', 'mac', 'groupId'];
+    for (const f of blocked) { if (req.body[f] !== undefined) return res.status(403).json({ message: `Technician à¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¹à¸à¹‰à¹„à¸‚ ${f} à¹„à¸”à¹‰` }); }
+  } else {
+    ['name', 'serialNumber', 'ip', 'mac', 'location', 'groupId', 'wifiSSID', 'wifiIP', 'btAddress'].forEach(f => { if (req.body[f] !== undefined) device[f] = req.body[f]; });
+    if (req.body.serialNumber && devices.find(d => d.serialNumber === req.body.serialNumber && d.id !== device.id)) return res.status(400).json({ message: 'Serial Number à¸‹à¹‰à¸³' });
+  }
+  res.json({ ...device, customerName: device.customerId ? customers.find(c => c.id === device.customerId)?.name || '' : '' });
+});
+
+router.put('/:id/status', anyRole, (req, res) => {
+  const device = devices.find(d => d.id === req.params.id);
+  if (!device) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡' });
+  ['isOn', 'level', 'battery', 'status', 'pumpOk', 'relayOk', 'btConnected', 'wifiSSID'].forEach(f => { if (req.body[f] !== undefined) device[f] = req.body[f]; });
+  res.json(device);
+});
+
+router.put('/:id/schedule', anyRole, (req, res) => {
+  const device = devices.find(d => d.id === req.params.id);
+  if (!device) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡' });
+  device.schedule = req.body.schedule || [];
+  res.json(device);
+});
+
+router.put('/:id/wifi', anyRole, (req, res) => {
+  const device = devices.find(d => d.id === req.params.id);
+  if (!device) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡' });
+  const { ssid, password } = req.body;
+  if (!ssid) return res.status(400).json({ message: 'à¸à¸£à¸­à¸ SSID' });
+  device.wifiSSID = ssid;
+  if (req.user.role === 'technician') {
+    notifications.push({ id: `n${Date.now()}`, type: 'wifi_change', title: `à¸Šà¹ˆà¸²à¸‡ ${req.user.name} à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™ WiFi à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡ ${device.serialNumber}`, message: `WiFi à¹ƒà¸«à¸¡à¹ˆ: ${ssid}`, deviceId: device.id, userId: req.user.id, targetRoles: ['admin', 'manager'], isRead: false, createdAt: new Date().toISOString() });
+  }
+  res.json({ message: 'à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™ WiFi à¸ªà¸³à¹€à¸£à¹‡à¸ˆ', device });
+});
+
+router.put('/:id/assign-customer', managerUp, (req, res) => {
+  const device = devices.find(d => d.id === req.params.id);
+  if (!device) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡' });
+  const { customerId, location } = req.body;
+  if (customerId && !customers.find(c => c.id === customerId)) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¸¥à¸¹à¸à¸„à¹‰à¸²' });
+  device.customerId = customerId || null;
+  if (location !== undefined) device.location = location;
+  res.json(device);
+});
+
+router.put('/:id/unassign', managerUp, (req, res) => {
+  const device = devices.find(d => d.id === req.params.id);
+  if (!device) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡' });
+  device.customerId = null; device.location = ''; device.schedule = []; device.groupId = null;
+  if (req.body.newSerialNumber) { if (devices.find(d => d.serialNumber === req.body.newSerialNumber && d.id !== device.id)) return res.status(400).json({ message: 'Serial Number à¸‹à¹‰à¸³' }); device.serialNumber = req.body.newSerialNumber; }
+  res.json(device);
+});
+
+router.delete('/:id', adminOnly, (req, res) => {
+  const idx = devices.findIndex(d => d.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡' });
+  devices.splice(idx, 1);
+  res.json({ message: 'à¸¥à¸šà¸ªà¸³à¹€à¸£à¹‡à¸ˆ' });
+});
+
+module.exports = router;
+===== C:\Users\ADNIM\Application Diffuser\diffuser_backend\src\routes\service-logs.js =====
+const router = require('express').Router();
+const { managerUp, anyRole } = require('../middleware/auth');
+const { serviceLogs, devices, users, customers } = require('../database');
+
+router.get('/', anyRole, (req, res) => {
+  let result = serviceLogs;
+  if (req.user.role === 'technician') result = result.filter(l => l.technicianId === req.user.id);
+  if (req.query.deviceId) result = result.filter(l => l.deviceId === req.query.deviceId);
+  if (req.query.customerId) {
+    const ids = devices.filter(d => d.customerId === req.query.customerId).map(d => d.id);
+    result = result.filter(l => ids.includes(l.deviceId));
+  }
+  const enriched = result.map(l => {
+    const d = devices.find(d => d.id === l.deviceId);
+    const t = users.find(u => u.id === l.technicianId);
+    const c = d?.customerId ? customers.find(c => c.id === d.customerId) : null;
+    return { ...l, deviceName: d?.name || '', deviceSerial: d?.serialNumber || '', customerName: c?.name || '', technicianName: t?.name || '' };
+  });
+  enriched.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  res.json(enriched);
+});
+
+router.post('/', anyRole, (req, res) => {
+  const { deviceId, type, description, notes, photos } = req.body;
+  if (!deviceId || !type) return res.status(400).json({ message: 'à¸à¸£à¸­à¸ deviceId à¹à¸¥à¸° type' });
+  if (!devices.find(d => d.id === deviceId)) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡' });
+  const validTypes = ['refill', 'repair', 'inspection', 'installation', 'uninstall', 'other'];
+  if (!validTypes.includes(type)) return res.status(400).json({ message: `type à¸•à¹‰à¸­à¸‡à¹€à¸›à¹‡à¸™: ${validTypes.join(', ')}` });
+
+  const log = { id: Date.now().toString(), deviceId, technicianId: req.user.id, type, description: description || '', notes: notes || '', photos: photos || [], createdAt: new Date().toISOString() };
+  serviceLogs.push(log);
+
+  const d = devices.find(d => d.id === deviceId);
+  const c = d?.customerId ? customers.find(c => c.id === d.customerId) : null;
+  res.status(201).json({ ...log, deviceName: d?.name || '', deviceSerial: d?.serialNumber || '', customerName: c?.name || '', technicianName: req.user.name });
+});
+
+router.get('/export', managerUp, (req, res) => {
+  let result = serviceLogs;
+  const { customerId, startDate, endDate } = req.query;
+  if (customerId) { const ids = devices.filter(d => d.customerId === customerId).map(d => d.id); result = result.filter(l => ids.includes(l.deviceId)); }
+  if (startDate) result = result.filter(l => new Date(l.createdAt) >= new Date(startDate));
+  if (endDate) result = result.filter(l => new Date(l.createdAt) <= new Date(endDate));
+
+  const enriched = result.map(l => {
+    const d = devices.find(d => d.id === l.deviceId);
+    const t = users.find(u => u.id === l.technicianId);
+    const c = d?.customerId ? customers.find(c => c.id === d.customerId) : null;
+    return { date: l.createdAt, type: l.type, description: l.description, notes: l.notes, deviceName: d?.name || '', deviceSerial: d?.serialNumber || '', customerName: c?.name || '', technicianName: t?.name || '', photoCount: l.photos?.length || 0 };
+  });
+  enriched.sort((a, b) => new Date(b.date) - new Date(a.date));
+  const ci = customerId ? customers.find(c => c.id === customerId) : null;
+  res.json({ reportTitle: ci ? `à¸£à¸²à¸¢à¸‡à¸²à¸™à¹€à¸‹à¸­à¸£à¹Œà¸§à¸´à¸ª - ${ci.name}` : 'à¸£à¸²à¸¢à¸‡à¸²à¸™à¹€à¸‹à¸­à¸£à¹Œà¸§à¸´à¸ªà¸—à¸±à¹‰à¸‡à¸«à¸¡à¸”', generatedAt: new Date().toISOString(), totalRecords: enriched.length, records: enriched });
+});
+
+module.exports = router;
+===== C:\Users\ADNIM\Application Diffuser\diffuser_backend\src\routes\users.js =====
+// routes/users.js
+const router = require('express').Router();
+const bcrypt = require('bcryptjs');
+const { adminOnly, managerUp } = require('../middleware/auth');
+const { users } = require('../database');
+
+// GET /api/users â€” à¸”à¸¹à¸£à¸²à¸¢à¸Šà¸·à¹ˆà¸­à¸œà¸¹à¹‰à¹ƒà¸Šà¹‰à¸—à¸±à¹‰à¸‡à¸«à¸¡à¸” (admin + manager)
+router.get('/', managerUp, (req, res) => {
+  const safeUsers = users.map(({ password: _, ...u }) => u);
+  res.json(safeUsers);
+});
+
+// GET /api/users/online â€” à¸”à¸¹à¸§à¹ˆà¸²à¹ƒà¸„à¸£à¸­à¸­à¸™à¹„à¸¥à¸™à¹Œà¸­à¸¢à¸¹à¹ˆ (admin + manager)
+router.get('/online', managerUp, (req, res) => {
+  const onlineUsers = users
+    .filter(u => u.isOnline)
+    .map(({ password: _, ...u }) => u);
+  res.json(onlineUsers);
+});
+
+// POST /api/users â€” à¸ªà¸£à¹‰à¸²à¸‡à¸œà¸¹à¹‰à¹ƒà¸Šà¹‰à¹ƒà¸«à¸¡à¹ˆ (admin only)
+router.post('/', adminOnly, async (req, res) => {
+  try {
+    const { name, email, password, role = 'technician' } = req.body;
+    if (!name || !email || !password) return res.status(400).json({ message: 'à¸à¸£à¸­à¸à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¹ƒà¸«à¹‰à¸„à¸£à¸š' });
+    if (!['admin', 'manager', 'technician'].includes(role)) return res.status(400).json({ message: 'Role à¹„à¸¡à¹ˆà¸–à¸¹à¸à¸•à¹‰à¸­à¸‡ (admin, manager, technician)' });
+    if (users.find(u => u.email === email.toLowerCase())) return res.status(400).json({ message: 'à¸­à¸µà¹€à¸¡à¸¥à¸™à¸µà¹‰à¸¡à¸µà¹ƒà¸™à¸£à¸°à¸šà¸šà¹à¸¥à¹‰à¸§' });
+
+    const newUser = {
+      id: Date.now().toString(),
+      name,
+      email: email.toLowerCase(),
+      password: await bcrypt.hash(password, 10),
+      role,
+      lastLogin: null,
+      isOnline: false,
+      createdAt: new Date().toISOString(),
+    };
+    users.push(newUser);
+    const { password: _, ...safe } = newUser;
+    res.status(201).json(safe);
+  } catch (error) {
+    console.error('Create user error:', error);
+    res.status(500).json({ message: 'à¹€à¸à¸´à¸”à¸‚à¹‰à¸­à¸œà¸´à¸”à¸žà¸¥à¸²à¸”' });
+  }
+});
+
+// PUT /api/users/:id â€” à¹à¸à¹‰à¹„à¸‚à¸œà¸¹à¹‰à¹ƒà¸Šà¹‰ (admin only)
+router.put('/:id', adminOnly, async (req, res) => {
+  try {
+    const idx = users.findIndex(u => u.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰' });
+
+    const { name, email, password, role } = req.body;
+    if (name) users[idx].name = name;
+    if (email) users[idx].email = email.toLowerCase();
+    if (role && ['admin', 'manager', 'technician'].includes(role)) users[idx].role = role;
+    if (password) users[idx].password = await bcrypt.hash(password, 10);
+
+    const { password: _, ...safe } = users[idx];
+    res.json(safe);
+  } catch (error) {
+    console.error('Update user error:', error);
+    res.status(500).json({ message: 'à¹€à¸à¸´à¸”à¸‚à¹‰à¸­à¸œà¸´à¸”à¸žà¸¥à¸²à¸”' });
+  }
+});
+
+// DELETE /api/users/:id â€” à¸¥à¸šà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰ (admin only)
+router.delete('/:id', adminOnly, (req, res) => {
+  const idx = users.findIndex(u => u.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ message: 'à¹„à¸¡à¹ˆà¸žà¸šà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰' });
+  if (users[idx].id === req.user.id) return res.status(400).json({ message: 'à¸¥à¸šà¸•à¸±à¸§à¹€à¸­à¸‡à¹„à¸¡à¹ˆà¹„à¸”à¹‰' });
+  users.splice(idx, 1);
+  res.json({ message: 'à¸¥à¸šà¸ªà¸³à¹€à¸£à¹‡à¸ˆ' });
+});
+
+module.exports = router;

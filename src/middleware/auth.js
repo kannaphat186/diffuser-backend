@@ -1,6 +1,5 @@
 // middleware/auth.js
 const jwt = require('jsonwebtoken');
-
 const SECRET = process.env.JWT_SECRET || 'scent-and-sense-secret-2025';
 
 // ตรวจ JWT Token
@@ -18,22 +17,24 @@ function verify(req, res, next) {
 // เฉพาะ Admin เท่านั้น
 function adminOnly(req, res, next) {
   verify(req, res, () => {
-    if (req.user.role !== 'admin') return res.status(403).json({ message: 'ต้องเป็น Admin เท่านั้น' });
+    if (req.user.role !== 'admin')
+      return res.status(403).json({ message: 'เฉพาะ Admin เท่านั้น' });
     next();
   });
 }
 
-// Admin หรือ Manager
+// Admin + Manager
 function managerUp(req, res, next) {
   verify(req, res, () => {
-    if (!['admin', 'manager'].includes(req.user.role)) return res.status(403).json({ message: 'ต้องเป็น Admin หรือ Manager' });
+    if (!['admin', 'manager'].includes(req.user.role))
+      return res.status(403).json({ message: 'เฉพาะ Admin/Manager เท่านั้น' });
     next();
   });
 }
 
-// ทุก Role (แค่ต้อง login)
+// ทุก Role
 function anyRole(req, res, next) {
   verify(req, res, next);
 }
 
-module.exports = { verify, adminOnly, managerUp, anyRole, SECRET };
+module.exports = { verify, adminOnly, managerUp, anyRole };

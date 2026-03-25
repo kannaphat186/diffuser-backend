@@ -1,32 +1,45 @@
+// routes/auth.js
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { users } = require('../database');
-const { SECRET, verify } = require('../middleware/auth');
+const jwt    = require('jsonwebtoken');
+const User   = require('../models/User');
+const { verify } = require('../middleware/auth');
+
+const SECRET = process.env.JWT_SECRET || 'scent-and-sense-secret-2025';
+
+// Helper: แปลง _id → id
+const safeUser = (u) => {
+  const obj = u.toObject ? u.toObject() : u;
+  const { password, ...rest } = obj;
+  return { ...rest, id: rest._id.toString() };
+};
 
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: 'กรุณากรอกอีเมลและรหัสผ่าน' });
+    if (!email || !password)
+      return res.status(400).json({ message: 'กรอก email และ password' });
 
-    const user = users.find(u => u.email === email.toLowerCase());
-    if (!user) return res.status(401).json({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user)
+      return res.status(401).json({ message: 'Email หรือ password ไม่ถูกต้อง' });
 
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) return res.status(401).json({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res.status(401).json({ message: 'Email หรือ password ไม่ถูกต้อง' });
 
-    user.lastLogin = new Date().toISOString();
-    user.isOnline = true;
+    user.lastLogin = new Date();
+    user.isOnline  = true;
+    await user.save({ validateModifiedOnly: true });
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role, name: user.name },
+      { id: user._id.toString(), email: user.email, role: user.role, name: user.name },
       SECRET,
-      { expiresIn: '30d' }
+      { expiresIn: '7d' }
     );
 
-    const { password: _, ...safe } = user;
-    res.json({ token, user: safe });
+    res.json({ token, user: safeUser(user) });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
@@ -34,61 +47,47 @@ router.post('/login', async (req, res) => {
 });
 
 // POST /api/auth/logout
-router.post('/logout', verify, (req, res) => {
-  const user = users.find(u => u.id === req.user.id);
-  if (user) user.isOnline = false;
-  res.json({ message: 'ออกจากระบบแล้ว' });
+router.post('/logout', verify, async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.user.id, { isOnline: false });
+    res.json({ message: 'Logout สำเร็จ' });
+  } catch (error) {
+    res.json({ message: 'OK' }); // fire-and-forget
+  }
 });
 
 // GET /api/auth/me
-router.get('/me', verify, (req, res) => {
-  const user = users.find(u => u.id === req.user.id);
-  if (!user) return res.status(404).json({ message: 'ไม่พบผู้ใช้' });
-  const { password: _, ...safe } = user;
-  res.json(safe);
-});
-
-// POST /api/auth/forgot-password — ขอรีเซ็ตรหัสผ่าน
-router.post('/forgot-password', (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ message: 'กรอกอีเมล' });
-
-  const user = users.find(u => u.email === email.toLowerCase());
-  // ไม่บอกว่าเจอหรือไม่เจอ (security)
-  if (user) {
-    // สร้าง reset token อายุ 1 ชั่วโมง
-    const resetToken = jwt.sign({ id: user.id, type: 'reset' }, SECRET, { expiresIn: '1h' });
-    user.resetToken = resetToken;
-    user.resetExpiry = new Date(Date.now() + 3600000).toISOString();
-    console.log(`🔑 Reset token for ${email}: ${resetToken}`);
-    console.log(`📧 Admin: ส่ง token นี้ให้ ${user.name} (${user.email})`);
-  }
-
-  res.json({ message: 'หากอีเมลนี้มีในระบบ Admin จะติดต่อกลับ' });
-});
-
-// POST /api/auth/reset-password — Admin รีเซ็ตให้ได้เลย
-router.post('/reset-password', verify, async (req, res) => {
+router.get('/me', verify, async (req, res) => {
   try {
-    // Admin รีเซ็ตรหัสผ่านให้ user คนอื่น
-    if (req.user.role === 'admin') {
-      const { userId, newPassword } = req.body;
-      if (!userId || !newPassword) return res.status(400).json({ message: 'กรอก userId และ newPassword' });
-      const target = users.find(u => u.id === userId);
-      if (!target) return res.status(404).json({ message: 'ไม่พบผู้ใช้' });
-      target.password = await bcrypt.hash(newPassword, 10);
-      return res.json({ message: `รีเซ็ตรหัสผ่านของ ${target.name} สำเร็จ` });
-    }
-    // User เปลี่ยนรหัสตัวเอง
-    const { currentPassword, newPassword } = req.body;
-    if (!currentPassword || !newPassword) return res.status(400).json({ message: 'กรอกรหัสผ่านปัจจุบันและใหม่' });
-    const user = users.find(u => u.id === req.user.id);
+    const user = await User.findById(req.user.id).select('-password');
     if (!user) return res.status(404).json({ message: 'ไม่พบผู้ใช้' });
-    const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) return res.status(401).json({ message: 'รหัสผ่านปัจจุบันไม่ถูกต้อง' });
-    user.password = await bcrypt.hash(newPassword, 10);
+    res.json(safeUser(user));
+  } catch (error) {
+    res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
+  }
+});
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', async (req, res) => {
+  // ตอบ success เสมอ ป้องกัน email enumeration
+  res.json({ message: 'ถ้า email นี้มีในระบบ จะได้รับ email รีเซ็ตรหัสผ่าน' });
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { userId, newPassword } = req.body;
+    if (!userId || !newPassword)
+      return res.status(400).json({ message: 'กรอก userId และ newPassword' });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'ไม่พบผู้ใช้' });
+
+    user.password = newPassword; // pre-save hook จะ hash ให้
+    await user.save();
     res.json({ message: 'เปลี่ยนรหัสผ่านสำเร็จ' });
   } catch (error) {
+    console.error('Reset password error:', error);
     res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
   }
 });
