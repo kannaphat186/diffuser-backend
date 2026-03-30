@@ -104,7 +104,7 @@ router.put('/:id', anyRole, async (req, res) => {
   }
 });
 
-// PUT /api/devices/:id/status — เปิด/ปิด + ★ emit
+// PUT /api/devices/:id/status — เปิด/ปิด + 🔥 emit
 router.put('/:id/status', anyRole, async (req, res) => {
   try {
     const { isOn } = req.body;
@@ -155,7 +155,25 @@ router.put('/:id/assign-customer', managerUp, async (req, res) => {
   }
 });
 
-// PUT /api/devices/:id/sensor — ESP32 + ★ emit real-time
+// 🔥 ESP32 endpoint — ไม่ต้อง auth (เครื่อง diffuser เรียกเอง)
+// GET /api/devices/:id/state — ESP32 ดึงสถานะ + schedule
+router.get('/:id/state', async (req, res) => {
+  try {
+    const device = await Device.findById(req.params.id);
+    if (!device) return res.status(404).json({ message: 'ไม่พบเครื่อง' });
+    res.json({
+      isOn: device.isOn,
+      level: device.level,
+      levelMl: device.levelMl,
+      schedule: device.schedule,
+      status: device.status,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
+  }
+});
+
+// PUT /api/devices/:id/sensor — ESP32 + 🔥 emit real-time
 router.put('/:id/sensor', async (req, res) => {
   try {
     const { levelMl, status, ip, wifiSSID, firmwareVersion } = req.body;
@@ -173,10 +191,23 @@ router.put('/:id/sensor', async (req, res) => {
     const device = await Device.findByIdAndUpdate(req.params.id, update, { new: true });
     if (!device) return res.status(404).json({ message: 'ไม่พบเครื่อง' });
 
-    // ★ emit real-time ไปยัง Flutter app ทุกเครื่อง
+    // 🔥 emit real-time ไปยัง Flutter app ทุกเครื่อง
     emitDeviceUpdate(req, device);
 
     res.json({ message: 'OK', level: device.level, levelMl: device.levelMl });
+  } catch (error) {
+    res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
+  }
+});
+
+// 🔥 ESP32 endpoint — toggle จากสวิตช์บนเครื่อง (ไม่ต้อง auth)
+router.put('/:id/hw-toggle', async (req, res) => {
+  try {
+    const { isOn } = req.body;
+    const device = await Device.findByIdAndUpdate(req.params.id, { isOn }, { new: true });
+    if (!device) return res.status(404).json({ message: 'ไม่พบเครื่อง' });
+    emitDeviceUpdate(req, device);
+    res.json({ message: 'OK', isOn: device.isOn });
   } catch (error) {
     res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
   }
@@ -187,7 +218,7 @@ router.delete('/:id', anyRole, async (req, res) => {
   try {
     const device = await Device.findByIdAndDelete(req.params.id);
     if (!device) return res.status(404).json({ message: 'ไม่พบเครื่อง' });
-    // ★ emit device removed
+    // 🔥 emit device removed
     const io = req.app.get('io');
     if (io) io.emit('device:removed', { id: req.params.id });
     res.json({ message: 'ลบสำเร็จ' });

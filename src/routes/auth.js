@@ -71,7 +71,7 @@ router.post('/forgot-password', async (req, res) => {
   res.json({ message: 'ถ้า email นี้มีในระบบ จะได้รับ email รีเซ็ตรหัสผ่าน' });
 });
 
-// ★ FIXED: POST /api/auth/reset-password — ใช้ email แทน userId
+// 🔥 FIXED: POST /api/auth/reset-password — ใช้ email แทน userId
 router.post('/reset-password', async (req, res) => {
   try {
     const { email, newPassword } = req.body;

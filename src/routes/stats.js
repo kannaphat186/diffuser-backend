@@ -1,4 +1,4 @@
-// routes/stats.js — ★ NEW: Stats API จริง
+// routes/stats.js — 🔥 NEW: Stats API จริง
 const router     = require('express').Router();
 const { anyRole } = require('../middleware/auth');
 const Device     = require('../models/Device');
@@ -30,7 +30,7 @@ router.get('/', anyRole, async (req, res) => {
       logsByType[l.type] = (logsByType[l.type] || 0) + 1;
     }
 
-    // น้ำหอมแต่ละเครื่อง
+    // น้ำหอมต่อเครื่อง
     const fragrancePerDevice = devices.map(d => ({
       id: d._id.toString(),
       name: d.name || d.serialNumber,

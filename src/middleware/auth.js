@@ -2,7 +2,7 @@
 const jwt = require('jsonwebtoken');
 const SECRET = process.env.JWT_SECRET || 'scent-and-sense-secret-2025';
 
-// ตรวจ JWT Token
+// ตรวจสอบ JWT Token
 function verify(req, res, next) {
   const token = req.header('Authorization')?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'ไม่มี token การยืนยันตัวตน' });

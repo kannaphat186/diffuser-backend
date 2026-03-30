@@ -21,7 +21,8 @@ async function seed() {
     Notification.deleteMany({}),
   ]);
 
-  // ส่ง plain password — ให้ User model pre('save') hook hash ให้อัตโนมัติ
+  // ✅ ส่ง plain password — ให้ User model pre('save') hook hash ให้อัตโนมัติ
+  // ❌ เดิม: bcrypt.hash('password', 10) แล้วส่ง hash เข้า create → โดน hash ซ้ำ 2 รอบ!
   await User.create({
     name: 'Admin',
     email: 'admin@scentandsense.com',

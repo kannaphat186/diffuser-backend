@@ -103,7 +103,6 @@ app.get('/health', (req, res) => res.json({ status: 'OK', version: '3.1.0', db: 
 io.on('connection', (socket) => {
   console.log(`🔌 Client connected: ${socket.id}`);
 
-  // Client ส่ง join room ตาม role
   socket.on('join', (data) => {
     if (data?.role) {
       socket.join(`role:${data.role}`);
@@ -114,7 +113,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Client สั่ง toggle device
   socket.on('device:toggle', async (data) => {
     try {
       const { deviceId, isOn } = data;
