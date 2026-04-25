@@ -1,0 +1,14 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - test/**
+    - example/**
+    - build/**
+    - .dart_tool/**
+  errors:
+    no_leading_underscores_for_local_identifiers: ignore
+
+linter:
+  rules:
+    # Keep defaults from flutter_lints.

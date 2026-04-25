@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "698419620271",
+    "project_id": "diffuser-ea88",
+    "storage_bucket": "diffuser-ea88.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:698419620271:android:331d08b9de97c376a9675a",
+        "android_client_info": {
+          "package_name": "com.diffuser.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDH9Tir8rHW7jkH-gCugdzdazpiGBlbET0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

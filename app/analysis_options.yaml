@@ -1,0 +1,19 @@
+# Analyzer config for the Scent & Sense Flutter app.
+#
+# We intentionally exclude vendored third_party code from app analysis.
+# That code is pinned as an override dependency and may contain its own
+# tests / mocks / lint rules that do not belong to this app's CI gate.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - third_party/**
+    - build/**
+    - .dart_tool/**
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+
+linter:
+  rules:
+    # Keep defaults from flutter_lints.

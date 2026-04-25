@@ -1,0 +1,51 @@
+name: diffuser_app
+description: "Scent and Sense Laboratory Diffuser App"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # UI
+  cupertino_icons: ^1.0.8
+  fl_chart: ^1.2.0
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+
+  # Navigation
+  go_router: ^14.6.2
+
+  # Network
+  dio: ^5.7.0
+
+  # Bluetooth
+  flutter_blue_plus: ^2.2.1
+
+  # WebSocket
+  web_socket_channel: ^3.0.3
+
+  # Storage
+  shared_preferences: ^2.3.3
+  flutter_secure_storage: ^10.0.0
+
+  # Localization
+  intl: any
+
+  # App Info
+  package_info_plus: ^8.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  generate: false

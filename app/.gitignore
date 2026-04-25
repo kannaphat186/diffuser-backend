@@ -1,0 +1,52 @@
+# ─── Secrets — NEVER commit these ────────────────────────────────
+# Android signing
+android/key.properties
+android/app/*.keystore
+android/app/*.jks
+
+# Firebase client config — technically public, but still project-specific
+# Uncomment the next two lines if you treat google-services.json as sensitive.
+# android/app/google-services.json
+# ios/Runner/GoogleService-Info.plist
+
+# dart-define passthroughs (if you store them in a file)
+.env
+.env.local
+
+# ─── Flutter / Dart build output ─────────────────────────────────
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+.flutter-plugins.lock
+
+# ─── Android ─────────────────────────────────────────────────────
+android/.gradle/
+android/captures/
+android/local.properties
+android/**/gradle-wrapper.jar
+android/app/release/
+android/app/profile/
+android/app/debug/
+
+# ─── iOS / macOS ─────────────────────────────────────────────────
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/App.framework
+ios/Flutter/flutter_assets/
+macos/Pods/
+
+# ─── OS / editor ─────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
